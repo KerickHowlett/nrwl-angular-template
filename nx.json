@@ -1,0 +1,30 @@
+{
+  "implicitDependencies": {
+    "package.json": {
+      "dependencies": "*",
+      "devDependencies": "*"
+    },
+    ".eslintrc.json": "*"
+  },
+  "affected": {
+    "defaultBase": "master"
+  },
+  "npmScope": "nrwl-angular-monorepo-template",
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nrwl/workspace/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "lint", "test", "e2e"]
+      }
+    }
+  },
+  "projects": {
+    "nrwl-angular-monorepo-template": {
+      "tags": []
+    },
+    "nrwl-angular-monorepo-template-e2e": {
+      "tags": [],
+      "implicitDependencies": ["nrwl-angular-monorepo-template"]
+    }
+  }
+}
