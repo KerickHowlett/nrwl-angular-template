@@ -1,4 +1,8 @@
-# Add files here to ignore them from prettier formatting
-
-/dist
+**/.*
+/.devcontainer
+/.git
+/.github
+/.vscode
 /coverage
+/dist
+/node_modules

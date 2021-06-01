@@ -14,17 +14,14 @@
     "default": {
       "runner": "@nrwl/workspace/tasks-runners/default",
       "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"]
+        "cacheableOperations": [
+          "build",
+          "lint",
+          "test",
+          "e2e"
+        ]
       }
     }
   },
-  "projects": {
-    "nrwl-angular-monorepo-template": {
-      "tags": []
-    },
-    "nrwl-angular-monorepo-template-e2e": {
-      "tags": [],
-      "implicitDependencies": ["nrwl-angular-monorepo-template"]
-    }
-  }
+  "projects": {}
 }

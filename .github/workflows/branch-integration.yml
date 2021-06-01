@@ -1,0 +1,292 @@
+name: CI/CD Pipeline Template
+
+on:
+    pull_request:
+        branches:
+            - test
+            - master
+jobs:
+    cache_dependencies:
+        name: Cache Dependencies
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Branch
+              uses: actions/checkout@v2
+              with:
+                ref: ${{ github.event.pull_request.head.ref }}
+                fetch-depth: 0
+
+            - name: Setup Environment
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 14.x
+
+            - name: Set Cache Directory Filepath
+              id: cache-directory-path
+              run: echo "::set-output name=directory::$(yarn cache dir)"
+
+            - name: Set Cache Keys
+              uses: actions/cache@v2
+              id: cached-dependencies
+              with:
+                path: ${{ steps.cache-directory-path.outputs.directory }}
+                key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}-${{ github.sha }}
+                restore-keys: |
+                    ${{ runner.os }}-yarn-${{ github.sha }}-
+
+            - name: Set Up Yarn Environment
+              run: |
+                    yarn config set ignore-engines true
+                    yarn config set workspaces-experimental true
+
+            - name: Fetch repo & Prune.
+              run: git fetch --no-tags --prune --depth=5 origin master
+
+            - name: Installing Dependencies
+              run: yarn install --frozen-lockfile --prefer-offline
+
+            - name: Check for Circular Dependencies
+              run: yarn deps:check:circular
+    check-formatting:
+        name: Check Formatting
+        runs-on: ubuntu-latest
+        needs: cache_dependencies
+        steps:
+            - name: Checkout Branch
+              uses: actions/checkout@v2
+              with:
+                ref: ${{ github.event.pull_request.head.ref }}
+                fetch-depth: 0
+
+            - name: Setup Node Environment
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 14.x
+
+            - name: Set Cache Directory Filepath
+              id: cache-directory-path
+              run: echo "::set-output name=directory::$(yarn cache dir)"
+
+            - name: Set Cache Keys
+              uses: actions/cache@v2
+              id: cached-dependencies
+              with:
+                path: ${{ steps.cache-directory-path.outputs.directory }}
+                key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}-${{ github.sha }}
+                restore-keys: |
+                    ${{ runner.os }}-yarn-${{ github.sha }}-
+
+            - name: Set Up Yarn Environment
+              run: |
+                    yarn config set ignore-engines true
+                    yarn config set workspaces-experimental true
+
+            - name: Fetch repo & Prune.
+              run: git fetch --no-tags --prune --depth=5 origin master
+
+            - name: Installing Dependencies
+              run: yarn install --frozen-lockfile --prefer-offline
+
+            - name: Check Formatting
+              run: yarn format:check --parallel
+    style-lints:
+        name: Style Lint
+        runs-on: ubuntu-latest
+        needs: cache_dependencies
+        steps:
+            - name: Checkout Branch
+              uses: actions/checkout@v2
+              with:
+                ref: ${{ github.event.pull_request.head.ref }}
+                fetch-depth: 0
+
+            - name: Setup Node Environment
+              uses: actions/setup-node@v2
+              with:
+                node-version: 14.x
+
+            - name: Set Cache Directory Filepath
+              id: cache-directory-path
+              run: echo "::set-output name=directory::$(yarn cache dir)"
+
+            - name: Set Cache Keys
+              uses: actions/cache@v2
+              id: cached-dependencies
+              with:
+                path: ${{ steps.cache-directory-path.outputs.directory }}
+                key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}-${{ github.sha }}
+                restore-keys: |
+                    ${{ runner.os }}-yarn-${{ github.sha }}-
+
+            - name: Set Up Yarn Environment
+              run: |
+                    yarn config set ignore-engines true
+                    yarn config set workspaces-experimental true
+
+            - name: Fetch repo & Prune.
+              run: git fetch --no-tags --prune --depth=5 origin master
+
+            - name: Installing Dependencies
+              run: yarn install --frozen-lockfile --prefer-offline
+
+            - name: Lint Check | Workspace
+              run: yarn lint:workspace
+
+            - name: Lint Check | Affected
+              uses: mansagroup/nrwl-nx-action@v2
+              with:
+                targets: stylelint
+                parallel: true
+                nxCloud: true
+                affected: true
+    build:
+        name: Build Check
+        runs-on: ubuntu-latest
+        needs: cache_dependencies
+        steps:
+            - name: Checkout Branch
+              uses: actions/checkout@v2
+              with:
+                ref: ${{ github.event.pull_request.head.ref }}
+                fetch-depth: 0
+
+            - name: Setup Node Environment
+              uses: actions/setup-node@v2
+              with:
+                node-version: 14.x
+
+            - name: Set Cache Directory Filepath
+              id: cache-directory-path
+              run: echo "::set-output name=directory::$(yarn cache dir)"
+
+            - name: Set Cache Keys
+              uses: actions/cache@v2
+              id: cached-dependencies
+              with:
+                path: ${{ steps.cache-directory-path.outputs.directory }}
+                key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}-${{ github.sha }}
+                restore-keys: |
+                    ${{ runner.os }}-yarn-${{ github.sha }}-
+
+            - name: Set Up Yarn Environment
+              run: |
+                    yarn config set ignore-engines true
+                    yarn config set workspaces-experimental true
+
+            - name: Fetch repo & Prune.
+              run: git fetch --no-tags --prune --depth=5 origin master
+
+            - name: Installing Dependencies
+              run: yarn install --frozen-lockfile --prefer-offline
+
+            - name: Build Check
+              uses: mansagroup/nrwl-nx-action@v2
+              with:
+                targets: build
+                parallel: true
+                nxCloud: true
+                affected: true
+    test:
+        name: Unit Test
+        runs-on: ubuntu-latest
+        needs: cache_dependencies
+        steps:
+            - name: Checkout Branch
+              uses: actions/checkout@v2
+              with:
+                ref: ${{ github.event.pull_request.head.ref }}
+                fetch-depth: 0
+
+            - name: Setup Node Environment
+              uses: actions/setup-node@v2
+              with:
+                node-version: 14.x
+
+            - name: Set Cache Directory Filepath
+              id: cache-directory-path
+              run: echo "::set-output name=directory::$(yarn cache dir)"
+
+            - name: Set Cache Keys
+              uses: actions/cache@v2
+              id: cached-dependencies
+              with:
+                path: ${{ steps.cache-directory-path.outputs.directory }}
+                key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}-${{ github.sha }}
+                restore-keys: |
+                    ${{ runner.os }}-yarn-${{ github.sha }}-
+
+            - name: Set Up Yarn Environment
+              run: |
+                    yarn config set ignore-engines true
+                    yarn config set workspaces-experimental true
+
+            - name: Fetch repo & Prune.
+              run: git fetch --no-tags --prune --depth=5 origin master
+
+            - name: Installing Dependencies
+              run: yarn install --frozen-lockfile --prefer-offline
+
+            - name: Conduct Tests
+              uses: mansagroup/nrwl-nx-action@v2
+              with:
+                targets: test
+                parallel: true
+                nxCloud: true
+                affected: true
+    e2e:
+        name: E2E Test
+        runs-on: ubuntu-latest
+        container: cypress/browsers:node14.16.0-chrome89-ff86
+        needs: cache_dependencies
+        steps:
+            - name: Checkout Branch
+              uses: actions/checkout@v2
+              with:
+                ref: ${{ github.event.pull_request.head.ref }}
+                fetch-depth: 0
+
+            - name: Set Cache Directory Filepath
+              id: cache-directory-path
+              run: echo "::set-output name=directory::$(yarn cache dir)"
+
+            - name: Set Cache Keys
+              uses: actions/cache@v2
+              id: cached-dependencies
+              with:
+                path: ${{ steps.cache-directory-path.outputs.directory }}
+                key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}-${{ github.sha }}
+                restore-keys: |
+                    ${{ runner.os }}-yarn-${{ github.sha }}-
+
+            - name: Set Up Yarn Environment
+              run: |
+                    yarn config set ignore-engines true
+                    yarn config set workspaces-experimental true
+
+            - name: Fetch repo & Prune.
+              run: git fetch --no-tags --prune --depth=5 origin master
+
+            - name: Installing Dependencies
+              run: yarn install --frozen-lockfile --prefer-offline
+
+            - name: Run e2e Testing
+              uses: mansagroup/nrwl-nx-action@v2
+              with:
+                targets: e2e
+                parallel: true
+                nxCloud: true
+                affected: true
+                args: |
+                    --headless
+                    --baseUrl="http://localhost:4200"
+            - uses: actions/upload-artifact@v1
+              if: failure()
+              with:
+                name: cypress-screenshots
+                path: dist/cypress/screenshots
+            - uses: actions/upload-artifact@v1
+              if: failure()
+              with:
+                name: cypress-videos
+                path: dist/cypress/videos
+
